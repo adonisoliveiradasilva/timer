@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerDisplay = document.getElementById('timerDisplay');
     const markingsContainer = document.querySelector('.markings-container');
     const statusDisplay = document.getElementById('statusDisplay');
+    const cycleCountDisplay = document.getElementById('cycleCountDisplay');
+    const cycleToggleBtn = document.getElementById('cycleToggleBtn');
+    const cycleToggleIcon = document.getElementById('cycleToggleIcon');
 
     // Generate markings
     for (let i = 0; i < 12; i++) {
@@ -29,9 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let isResting = false;
     let totalTime = workTime;
     let timeRemaining = totalTime;
+    let cycleCount = 0;
+    let isCycleCounterEnabled = false;
 
     function updateStatusDisplay() {
         statusDisplay.textContent = isResting ? 'Descanso' : 'Foco';
+    }
+
+    function updateCycleCountDisplay() {
+        cycleCountDisplay.textContent = `Ciclos: ${cycleCount}`;
     }
 
     function updateTimerDisplay() {
@@ -67,6 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 notificationSound.play();
                 isResting = !isResting;
                 
+                if (isCycleCounterEnabled && !isResting) {
+                    cycleCount++;
+                    updateCycleCountDisplay();
+                }
+                
                 if (isResting) {
                     totalTime = restTime;
                     needle.style.backgroundColor = '#3498db'; // Blue for rest
@@ -94,11 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetTimer() {
         stopTimer();
         isResting = false;
+        cycleCount = 0;
         needle.style.backgroundColor = '#e74c3c'; // Back to work color
         totalTime = workTime;
         timeRemaining = totalTime;
         updateTimerDisplay();
         updateStatusDisplay();
+        updateCycleCountDisplay();
         updateStopwatchAnimation();
     }
 
@@ -126,14 +142,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    function updateCycleToggle() {
+        if (isCycleCounterEnabled) {
+            cycleToggleIcon.classList.remove('fa-toggle-off');
+            cycleToggleIcon.classList.add('fa-toggle-on');
+            cycleToggleBtn.classList.add('active');
+        } else {
+            cycleToggleIcon.classList.remove('fa-toggle-on');
+            cycleToggleIcon.classList.add('fa-toggle-off');
+            cycleToggleBtn.classList.remove('active');
+        }
+    }
+
+    cycleToggleBtn.addEventListener('click', () => {
+        isCycleCounterEnabled = !isCycleCounterEnabled;
+        updateCycleToggle();
+    });
+
     saveSettingsBtn.addEventListener('click', () => {
         workTime = parseInt(workTimeInput.value, 10);
         restTime = parseInt(restTimeInput.value, 10);
+        cycleCountDisplay.style.display = isCycleCounterEnabled ? 'block' : 'none';
         settingsModal.classList.remove('show');
         resetTimer();
     });
 
     // Initialize
+    cycleCountDisplay.style.display = 'none';
+    updateCycleCountDisplay();
+    updateCycleToggle();
     updateStatusDisplay();
     updateTimerDisplay();
     updateStopwatchAnimation();

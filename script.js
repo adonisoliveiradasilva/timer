@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let timeRemaining = totalTime;
     let cycleCount = 0;
     let isCycleCounterEnabled = false;
+    let audioUnlocked = false;
 
     function updateStatusDisplay() {
         statusDisplay.textContent = isResting ? 'Descanso' : 'Foco';
@@ -73,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateStopwatchAnimation();
             
             if (timeRemaining < 0) {
-                notificationSound.play();
+                notifyUser();
                 isResting = !isResting;
                 
                 if (isCycleCounterEnabled && !isResting) {
@@ -117,6 +118,27 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCycleCountDisplay();
         updateStopwatchAnimation();
     }
+
+    function unlockAudio() {
+        if (!audioUnlocked) {
+            notificationSound.play().catch(() => {});
+            notificationSound.pause();
+            notificationSound.currentTime = 0;
+            audioUnlocked = true;
+        }
+    }
+
+    function notifyUser() {
+        notificationSound.play().catch(() => {});
+        if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+        }
+    }
+
+    startStopBtn.addEventListener('click', unlockAudio);
+    resetBtn.addEventListener('click', unlockAudio);
+    settingsBtn.addEventListener('click', unlockAudio);
+    saveSettingsBtn.addEventListener('click', unlockAudio);
 
     startStopBtn.addEventListener('click', () => {
         if (isRunning) {
